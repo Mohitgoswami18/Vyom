@@ -3,8 +3,18 @@ import { Play } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative w-full min-h-screen pt-32 pb-20 md:pb-32 overflow-hidden">
+    <section className="relative bg-grid-pattern w-full min-h-screen pt-32 pb-2 overflow-hidden">
       {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-30" />
+      <div className="absolute top-1/4 -left-32 w-96 h-96 rounded-full bg-purple-400/20 blur-[120px] animate-pulse-slow" />
+      <div
+        className="absolute bottom-1/4 -right-32 w-96 h-96 rounded-full bg-blue-400/20 blur-[120px] animate-pulse-slow"
+        style={{ animationDelay: "2s" }}
+      />
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full bg-accent/10 blur-[150px] animate-pulse-slow"
+        style={{ animationDelay: "1s" }}
+      />
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-radial from-accent/20 via-transparent to-transparent" />
         <div className="absolute top-1/4 -left-96 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" />
