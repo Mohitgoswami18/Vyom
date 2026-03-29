@@ -15,9 +15,9 @@ export default function Navbar() {
 
   return (
     <header
-      className={`w-full bg-[#0A0A0A] border-b border-zinc-600 backdrop-blur-md" fixed top-0 left-0 right-0 z-50 transition-all duration-200  ${
+      className={`w-full bg-[#0A0A0A]  border-b border-zinc-600 backdrop-blur-md" fixed top-0 left-0 right-0 z-50 transition-all duration-200  ${
         scrolled
-          ? "backdrop-blur-lg shadow-md bg-transparent rounded-md"
+          ? "backdrop-blur-lg glass-card shadow-md bg-transparent rounded-md"
           : "py-2"
       }`}
     >
