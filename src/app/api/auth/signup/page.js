@@ -13,7 +13,7 @@ import {
   EyeOff,
   CheckCircle2,
 } from "lucide-react";
-import Vyom from "../../../assets/VyomLogo.png";
+import Vyom from "../../../../assets/VyomLogo.png";
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -298,7 +298,7 @@ export default function SignupPage() {
 
             {/* Login Link */}
             <p className="text-center text-sm text-muted">
-              Already have an account? <Link href="/auth/signin">Sign in</Link>
+              Already have an account? <Link href="/api/auth/signin">Sign in</Link>
             </p>
           </div>
         </div>

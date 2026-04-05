@@ -4,10 +4,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {signOut, useSession} from 'next-auth/react';
 
 import VyomLogo from '@/assets/VyomLogo.png';
 
 const Navbar = () => {
+  
+  const {data: session} = useSession();
   const [scrolled, setScrolled] = useState<boolean>(false);
 
   useEffect(() => {
@@ -58,16 +61,33 @@ const Navbar = () => {
 
         {/* Buttons */}
         <div className="flex items-center gap-3">
-          <Link href="/auth/signin">
-            <Button className="text-white bg-[#0A0A0A] hover:bg-white/20 py-1">
-              Sign In
-            </Button>
-          </Link>
-          <Link href="/auth/signup">
-            <Button className="bg-linear-to-r from-[#7646F0] to-blue-500 hover:opacity-90 text-white border-0">
-              Get Started
-            </Button>
-          </Link>
+          {session ? (
+            <div className="space-x-3">
+              <Button
+                onClick={() => signOut()}
+                className="text-white bg-[#0A0A0A] hover:bg-white/20 py-1"
+              >
+                Sign out
+              </Button>
+              <Button className="bg-linear-to-r from-[#7646F0] to-blue-500 hover:opacity-90 text-white border-0">
+                Dashboard
+              </Button>
+            </div>
+          ) : (
+            <div className="space-x-3">
+              <Link href="/api/auth/signin">
+                <Button className="text-white bg-[#0A0A0A] hover:bg-white/20 py-1">
+                  Sign In
+                </Button>
+              </Link>
+
+              <Link href="/api/auth/signup">
+                <Button className="bg-linear-to-r from-[#7646F0] to-blue-500 hover:opacity-90 text-white border-0">
+                  Get Started
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </nav>
     </header>
