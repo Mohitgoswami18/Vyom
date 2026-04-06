@@ -161,60 +161,45 @@
   box-shadow: var(--shadow-card);
 }
 
-/* --- Border Moving Animation --- */
-
-@property --angle {
+@property --border-angle {
   syntax: '<angle>';
   initial-value: 0deg;
   inherits: false;
 }
 
 @keyframes border-spin {
-  to { --angle: 360deg; }
+  to { --border-angle: 360deg; }
 }
 
-.box-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
+.card-border-runner {
+  position: absolute;
+  inset: -1px;        /* slightly outside the card */
+  border-radius: 1rem;
+  overflow: hidden;
+  z-index: 0;
 }
 
-.border-runner {
+.card-border-runner::before {
+  content: '';
   position: absolute;
   inset: 0;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.border-runner::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: 12px;
+  border-radius: 1rem;
   background: conic-gradient(
-    from var(--angle, 0deg),
+    from var(--border-angle, 0deg),
     transparent 0deg,
-    transparent 300deg,
-    #7F77DD 310deg,
-    #5DCAA5 330deg,
-    #7F77DD 350deg,
+    transparent 280deg,
+    #a855f7 300deg,
+    #3b82f6 330deg,
+    #a855f7 350deg,
     transparent 360deg
   );
-  animation: border-spin 2s linear infinite;
+  animation: border-spin 12s linear infinite;
 }
 
-.border-runner::after {
+.card-border-runner::after {
   content: '';
   position: absolute;
-  inset: 2.5px;
-  border-radius: 10px;
-}
-
-.box-content {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
+  inset: 1px;       /* thickness of the visible border */
+  border-radius: calc(1rem - 1px);
+  background: #0a0a0e;
 }

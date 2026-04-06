@@ -7,13 +7,14 @@ import { Input } from '@/components/ui/input'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import Image from "next/image";
 import Vyom from "../../assets/VyomLogo.png";
+import {signIn} from "next-auth/react"
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
     e.preventDefault()
     // Handle login logic here
   }
@@ -31,6 +32,7 @@ const LoginPage = () => {
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 rounded-full bg-accent/10 blur-[150px] animate-pulse-slow"
         style={{ animationDelay: "1s" }}
       />
+
       <div className="w-full max-w-md space-y-6">
         {/* Logo and heading */}
         <div className="text-center">
@@ -41,17 +43,23 @@ const LoginPage = () => {
           </div>
           <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
           <p className="text-muted-foreground font-semibold text-xs">
-            Sign in to Vyom
+            Sign in to Vyom to access AI to help you with your Internships
           </p>
         </div>
 
-        {/* Auth card */}
-        <div className="relative group ">
-          <div className="relative bg-[#0a0a0e] border border-zinc-900/50 backdrop-blur-xl rounded-2xl p-8 space-y-6">
+        {/* Auth card with moving border */}
+        <div className="relative group">
+          {/* Moving border runner */}
+          <div className="card-border-runner" aria-hidden="true" />
+
+          <div className="relative bg-[#0a0a0e] backdrop-blur-xl rounded-2xl p-8 space-y-6 z-10">
             {/* Social login buttons */}
             <div className="flex gap-2 mb-2">
               {/* Google */}
-              <Button className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all duration-300 hover:scale-[1.02]">
+              <Button
+                onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all duration-300 hover:scale-[1.02]"
+              >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
                     fill="#EA4335"
@@ -62,7 +70,10 @@ const LoginPage = () => {
               </Button>
 
               {/* Discord */}
-              <Button className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-white transition-all duration-300 hover:scale-[1.02]">
+              <Button
+                onClick={() => signIn("discord", { callbackUrl: "/dashboard" })}
+                className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-indigo-500/20 border border-white/10 text-white transition-all duration-300 hover:scale-[1.02]"
+              >
                 <svg
                   className="w-5 h-5"
                   viewBox="0 0 127.14 96.36"
@@ -74,7 +85,10 @@ const LoginPage = () => {
               </Button>
 
               {/* GitHub */}
-              <Button className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-zinc-700/40 border border-white/10 text-white transition-all duration-300 hover:scale-[1.02]">
+              <Button
+                onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+                className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-zinc-700/40 border border-white/10 text-white transition-all duration-300 hover:scale-[1.02]"
+              >
                 <svg
                   className="w-4 h-4"
                   fill="currentColor"
@@ -115,7 +129,7 @@ const LoginPage = () => {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-zinc-500/30 outline-none border-none text-foreground placeholder:text-muted-foreground"
+                    className="pl-10 text-white bg-zinc-500/30 outline-none border-none placeholder:text-muted-foreground"
                     required
                   />
                 </div>
@@ -144,7 +158,7 @@ const LoginPage = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-zinc-500/30 border-zinc-900/50 focus:border-purple-500/50 text-foreground placeholder:text-muted-foreground"
+                    className="pl-10 text-white pr-10 bg-zinc-500/30  placeholder:text-muted-foreground"
                     required
                   />
                   <button
@@ -205,6 +219,5 @@ const LoginPage = () => {
     </main>
   );
 }
-
 
 export default LoginPage;
