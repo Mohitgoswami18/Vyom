@@ -69,9 +69,11 @@ const Navbar = () => {
               >
                 Sign out
               </Button>
-              <Button className="bg-linear-to-r from-[#7646F0] to-blue-500 hover:opacity-90 text-white border-0">
-                Dashboard
-              </Button>
+              <Link href="/dashboard">
+                <Button className="bg-linear-to-r from-[#7646F0] to-blue-500 hover:opacity-90 text-white border-0">
+                  Dashboard
+                </Button>
+              </Link>
             </div>
           ) : (
             <div className="space-x-3">

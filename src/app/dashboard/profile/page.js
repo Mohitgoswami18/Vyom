@@ -1,10 +1,10 @@
 import { DashboardLayout } from "@/components/dashboard/layout";
-import { Overview } from "@/components/dashboard/overview";
+import { Profile } from "@/components/dashboard/profile";
 
-export default function DashboardPage() {
+export default function ProfilePage() {
   return (
     <DashboardLayout>
-      <Overview />
+      <Profile />
     </DashboardLayout>
   );
 }

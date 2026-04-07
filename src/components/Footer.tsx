@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import Vyom from "../../assets/VyomLogo.png"
+import Vyom from "../assets/VyomLogo.png";
 import Image from "next/image";
 
 const Footer = () => {
