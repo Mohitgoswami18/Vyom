@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import vyomLogo from "@/assets/VyomLogo.png";
 import {
   LayoutDashboard,
   User,
@@ -26,12 +28,12 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border bg-card/50 backdrop-blur-xl">
+    <aside className="fixed bg-[#121212] left-0 top-0 h-screen w-64 border-r border-zinc-800/50 backdrop-blur-xl">
       {/* Logo */}
-      <div className="flex h-20 items-center border-b border-border/50 px-6">
+      <div className="flex h-16 items-center border-b border-zinc-800/60 px-6">
         <Link href="/" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-accent to-blue-500" />
-          <span className="font-semibold text-foreground">InternAI</span>
+          <Image src={vyomLogo} alt="Vyom Logo" width={32} height={32} />
+          <span className="font-semibold text-white">Vyom</span>
         </Link>
       </div>
 
@@ -47,8 +49,8 @@ export default function Sidebar() {
               className={cn(
                 "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-gradient-to-r from-accent/20 to-blue-500/20 text-accent shadow-lg shadow-accent/20"
-                  : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
+                  ? "bg-linear-to-r from-purple-500/20 to-blue-500/20 text-accent shadow-sm shadow-purple-800"
+                  : "text-muted-foreground hover:bg-zinc-900/60 hover:text-white",
               )}
             >
               <Icon className="h-5 w-5" />
@@ -59,8 +61,8 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="absolute bottom-0 left-0 right-0 border-t border-border/50 bg-card/50 backdrop-blur-xl p-4">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-secondary/50 hover:text-foreground">
+      <div className="absolute bottom-0 left-0 right-0 border-t border-zinc-800/50 bg-[#121212] backdrop-blur-xl p-4">
+        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-zinc-900/70 hover:text-white">
           <LogOut className="h-5 w-5" />
           Logout
         </button>

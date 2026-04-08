@@ -54,19 +54,17 @@ const recentApplications = [
 
 export function Overview() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 ">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">
-          Welcome back, Alex!
-        </h1>
+        <h1 className="text-3xl font-bold text-white">Welcome back, Alex!</h1>
         <p className="mt-2 text-muted-foreground">
           Here&apos;s your internship journey at a glance
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4 ">
         {[
           {
             label: "Applications Sent",
@@ -97,17 +95,17 @@ export function Overview() {
           return (
             <div
               key={stat.label}
-              className={`group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-card/50 to-card/25 p-6 backdrop-blur-xl transition-all duration-300 hover:border-border hover:shadow-lg hover:shadow-${stat.color}/20`}
+              className={`group relative overflow-hidden rounded-xl border border-zinc-800/50 bg-[#101311] p-6 backdrop-blur-xl transition-all duration-300 hover:border-border hover:shadow-lg hover:shadow-${stat.color}/20`}
             >
               <div
-                className={`absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br ${stat.color} to-transparent opacity-10 blur-3xl transition-all duration-300 group-hover:opacity-20`}
+                className={`absolute -right-12 -top-12 h-32 w-32 rounded-full bg-linear-to-br ${stat.color} to-transparent opacity-10 blur-3xl transition-all duration-300 group-hover:opacity-20`}
               />
               <div className="relative z-10 flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
                     {stat.label}
                   </p>
-                  <p className="mt-2 text-4xl font-bold text-foreground">
+                  <p className="mt-2 text-4xl font-bold text-white">
                     {stat.value}
                   </p>
                 </div>
@@ -123,8 +121,8 @@ export function Overview() {
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Applications Chart */}
-        <div className="rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-xl">
-          <h3 className="mb-6 text-lg font-semibold text-foreground">
+        <div className="rounded-xl border border-zinc-800/50 bg-[#101311] p-6 backdrop-blur-xl">
+          <h3 className="mb-6 text-lg font-semibold text-white">
             Application Trend
           </h3>
           <ResponsiveContainer width="100%" height={250}>
@@ -150,8 +148,8 @@ export function Overview() {
         </div>
 
         {/* Match Score Chart */}
-        <div className="rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-xl">
-          <h3 className="mb-6 text-lg font-semibold text-foreground">
+        <div className="rounded-xl border border-zinc-800/50 bg-[#101311] p-6 backdrop-blur-xl">
+          <h3 className="mb-6 text-lg font-semibold text-white">
             AI Match Score
           </h3>
           <ResponsiveContainer width="100%" height={250}>
@@ -179,18 +177,18 @@ export function Overview() {
       </div>
 
       {/* Recent Applications */}
-      <div className="rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-xl">
-        <h3 className="mb-6 text-lg font-semibold text-foreground">
+      <div className="rounded-xl border border-zinc-800/50 bg-[#0F0F0F] p-6 backdrop-blur-xl">
+        <h3 className="mb-6 text-lg font-semibold text-white">
           Recent Applications
         </h3>
         <div className="space-y-3">
           {recentApplications.map((app) => (
             <div
               key={app.id}
-              className="flex items-center justify-between rounded-lg border border-border/30 bg-secondary/20 p-4 hover:bg-secondary/40"
+              className="flex items-center justify-between rounded-lg border border-zinc-900/30 bg-[#1D1D1D] p-4 hover:bg-white/10"
             >
               <div>
-                <p className="font-medium text-foreground">{app.company}</p>
+                <p className="font-medium text-white">{app.company}</p>
                 <p className="text-sm text-muted-foreground">{app.position}</p>
               </div>
               <div className="flex items-center gap-4">

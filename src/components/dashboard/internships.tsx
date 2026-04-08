@@ -124,7 +124,7 @@ export function Internships() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Find Internships</h1>
+        <h1 className="text-3xl font-bold text-white">Find Internships</h1>
         <p className="mt-2 text-muted-foreground">
           Discover opportunities matched to your skills with AI-powered
           recommendations
@@ -132,7 +132,7 @@ export function Internships() {
       </div>
 
       {/* Search and Filters */}
-      <div className="rounded-xl border border-border/50 bg-card/30 p-6 backdrop-blur-xl space-y-4">
+      <div className="rounded-xl border border-zinc-800/50 bg-white/5 p-6 backdrop-blur-xl space-y-4">
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
@@ -141,11 +141,11 @@ export function Internships() {
               placeholder="Search companies or positions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-border/50 bg-secondary/30 pl-10 pr-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-accent focus:outline-none"
+              className="w-full rounded-lg border border-zinc-800/50 bg-white/5 pl-10 pr-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
             />
           </div>
-          <button className="rounded-lg border border-border/50 bg-secondary/30 p-2.5 hover:bg-secondary/50 transition-colors">
-            <Filter className="h-5 w-5 text-muted-foreground" />
+          <button className="rounded-lg border border-zinc-800/50 bg-secondary/30 p-2.5 hover:bg-secondary/50 transition-colors">
+            <Filter className="h-5 w-5 text-white" />
           </button>
         </div>
 
@@ -161,7 +161,7 @@ export function Internships() {
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 selectedFilters.includes(filter.id)
                   ? "bg-accent text-background border border-accent"
-                  : "bg-secondary/30 text-foreground border border-border/50 hover:bg-secondary/50"
+                  : "bg-white/5 text-white border border-zinc-800/50 hover:bg-white/10"
               }`}
             >
               {filter.label}
@@ -181,15 +181,15 @@ export function Internships() {
         {filteredInternships.map((internship) => (
           <div
             key={internship.id}
-            className="group relative rounded-xl border border-border/50 bg-gradient-to-br from-card/50 to-card/25 p-6 backdrop-blur-xl transition-all duration-300 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10"
+            className="group relative rounded-xl border border-zinc-800/50 bg-white/5 p-6 backdrop-blur-xl transition-all duration-300 hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10"
           >
             {/* Header */}
             <div className="mb-4 flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-accent/40 to-blue-500/40 border border-border/50" />
+                  <div className="h-10 w-10 rounded-lg bg-linear-to-br from-purple-500/40 to-blue-500/40 border border-zinc-800/50" />
                   <div>
-                    <h3 className="font-semibold text-foreground">
+                    <h3 className="font-semibold text-white">
                       {internship.company}
                     </h3>
                     <p className="text-sm text-muted-foreground">
@@ -223,19 +223,19 @@ export function Internships() {
                 {internship.location} • {internship.type} •{" "}
                 {internship.duration}
               </p>
-              <p className="font-medium text-accent">{internship.salary}</p>
-              <p className="text-foreground">{internship.description}</p>
+              <p className="font-medium text-purple-500">{internship.salary}</p>
+              <p className="text-white">{internship.description}</p>
             </div>
 
             {/* Match Score */}
             <div className="mb-4 flex items-center gap-2">
-              <div className="flex-1 h-2 bg-secondary/30 rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-accent to-blue-500"
+                  className="h-full bg-linear-to-r from-purple-500 to-blue-500"
                   style={{ width: `${internship.matchScore}%` }}
                 />
               </div>
-              <span className="text-sm font-semibold text-accent">
+              <span className="text-sm font-semibold text-purple-500">
                 {internship.matchScore}%
               </span>
             </div>
@@ -245,7 +245,7 @@ export function Internships() {
               {internship.skills.slice(0, 3).map((skill) => (
                 <span
                   key={skill}
-                  className="rounded-full bg-secondary/40 px-3 py-1 text-xs text-muted-foreground"
+                  className="rounded-full bg-white/5 px-3 py-1 text-xs text-white"
                 >
                   {skill}
                 </span>
@@ -254,10 +254,10 @@ export function Internships() {
 
             {/* Actions */}
             <div className="flex gap-2">
-              <Button className="flex-1 bg-accent hover:bg-accent/80 text-background">
+              <Button className="flex-1 bg-purple-500 hover:bg-purple-500/80 text-background">
                 View Details
               </Button>
-              <button className="rounded-lg border border-border/50 bg-secondary/30 p-2.5 hover:bg-secondary/50 transition-colors">
+              <button className="rounded-lg border border-zinc-800/50 bg-secondary/30 p-2.5 hover:bg-secondary/50 transition-colors">
                 <Share2 className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>

@@ -23,17 +23,17 @@ export function Settings() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+        <h1 className="text-3xl font-bold text-white">Settings</h1>
         <p className="mt-2 text-muted-foreground">
           Manage your account and preferences
         </p>
       </div>
 
       {/* Notification Settings */}
-      <div className="rounded-xl border border-border/50 bg-card/30 p-8 backdrop-blur-xl">
+      <div className="rounded-xl border border-zinc-800/50 bg-white/5 p-8 backdrop-blur-xl">
         <div className="flex items-center gap-3 mb-6">
-          <Bell className="h-6 w-6 text-accent" />
-          <h2 className="text-xl font-semibold text-foreground">
+          <Bell className="h-6 w-6 text-purple-500" />
+          <h2 className="text-xl font-semibold text-white">
             Notifications
           </h2>
         </div>
@@ -64,18 +64,18 @@ export function Settings() {
           ].map(({ key, label, description }) => (
             <div
               key={key}
-              className="flex items-center justify-between rounded-lg border border-border/30 bg-secondary/20 p-4"
+              className="flex items-center justify-between rounded-lg border border-zinc-800/50 bg-white/5 p-4"
             >
               <div>
-                <p className="font-medium text-foreground">{label}</p>
+                <p className="font-medium text-white">{label}</p>
                 <p className="text-sm text-muted-foreground">{description}</p>
               </div>
               <button
                 onClick={() => handleToggle(key as keyof typeof settings)}
                 className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
                   settings[key as keyof typeof settings]
-                    ? "bg-accent"
-                    : "bg-secondary/50"
+                    ? "bg-purple-500"
+                    : "bg-white/10"
                 }`}
               >
                 <span
@@ -92,45 +92,23 @@ export function Settings() {
       </div>
 
       {/* Security Settings */}
-      <div className="rounded-xl border border-border/50 bg-card/30 p-8 backdrop-blur-xl">
+      <div className="rounded-xl border border-zinc-800/50 bg-white/5 p-8 backdrop-blur-xl">
         <div className="flex items-center gap-3 mb-6">
-          <Shield className="h-6 w-6 text-accent" />
-          <h2 className="text-xl font-semibold text-foreground">Security</h2>
+          <Shield className="h-6 w-6 text-purple-500" />
+          <h2 className="text-xl font-semibold text-white">Security</h2>
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border/30 bg-secondary/20 p-4">
-            <div>
-              <p className="font-medium text-foreground">
-                Two-Factor Authentication
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Add an extra layer of security to your account
-              </p>
-            </div>
-            <button
-              onClick={() => handleToggle("twoFactor")}
-              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-                settings.twoFactor ? "bg-accent" : "bg-secondary/50"
-              }`}
-            >
-              <span
-                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                  settings.twoFactor ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </div>
 
-          <button className="w-full rounded-lg border border-border/30 bg-secondary/20 p-4 text-left hover:bg-secondary/30 transition-colors">
-            <p className="font-medium text-foreground">Change Password</p>
+          <button className="w-full rounded-lg border border-zinc-800/50 bg-white/5 p-4 text-left hover:bg-white/10 transition-colors">
+            <p className="font-medium text-white">Change Password</p>
             <p className="text-sm text-muted-foreground">
               Update your password regularly
             </p>
           </button>
 
-          <button className="w-full rounded-lg border border-border/30 bg-secondary/20 p-4 text-left hover:bg-secondary/30 transition-colors">
-            <p className="font-medium text-foreground">Manage Sessions</p>
+          <button className="w-full rounded-lg border border-zinc-800/50 bg-white/5 p-4 text-left hover:bg-white/10 transition-colors">
+            <p className="font-medium text-white">Manage Sessions</p>
             <p className="text-sm text-muted-foreground">
               View and manage your active sessions
             </p>
@@ -139,16 +117,16 @@ export function Settings() {
       </div>
 
       {/* Privacy Settings */}
-      <div className="rounded-xl border border-border/50 bg-card/30 p-8 backdrop-blur-xl">
+      <div className="rounded-xl border border-zinc-800/50 bg-white/5 p-8 backdrop-blur-xl">
         <div className="flex items-center gap-3 mb-6">
-          <Eye className="h-6 w-6 text-accent" />
-          <h2 className="text-xl font-semibold text-foreground">Privacy</h2>
+          <Eye className="h-6 w-6 text-purple-500" />
+          <h2 className="text-xl font-semibold text-white">Privacy</h2>
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border/30 bg-secondary/20 p-4">
+          <div className="flex items-center justify-between rounded-lg border border-zinc-800/50 bg-white/5 p-4">
             <div>
-              <p className="font-medium text-foreground">Private Profile</p>
+              <p className="font-medium text-white">Private Profile</p>
               <p className="text-sm text-muted-foreground">
                 Make your profile visible only to you
               </p>
@@ -156,7 +134,7 @@ export function Settings() {
             <button
               onClick={() => handleToggle("privateProfile")}
               className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-                settings.privateProfile ? "bg-accent" : "bg-secondary/50"
+                settings.privateProfile ? "bg-purple-500" : "bg-white/10"
               }`}
             >
               <span
@@ -167,9 +145,9 @@ export function Settings() {
             </button>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-border/30 bg-secondary/20 p-4">
+          <div className="flex items-center justify-between rounded-lg border border-zinc-800/50 bg-white/5 p-4">
             <div>
-              <p className="font-medium text-foreground">Data Collection</p>
+              <p className="font-medium text-white">Data Collection</p>
               <p className="text-sm text-muted-foreground">
                 Allow us to collect data to improve recommendations
               </p>
@@ -177,7 +155,7 @@ export function Settings() {
             <button
               onClick={() => handleToggle("dataCollection")}
               className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-                settings.dataCollection ? "bg-accent" : "bg-secondary/50"
+                settings.dataCollection ? "bg-purple-500" : "bg-white/10"
               }`}
             >
               <span
@@ -195,10 +173,10 @@ export function Settings() {
         <h2 className="mb-6 text-xl font-semibold text-red-400">Danger Zone</h2>
 
         <div className="space-y-4">
-          <button className="w-full rounded-lg border border-border/30 bg-secondary/20 p-4 text-left hover:bg-secondary/30 transition-colors flex items-center gap-3">
+          <button className="w-full rounded-lg border border-zinc-800/50 bg-white/5 p-4 text-left hover:bg-secondary/30 transition-colors flex items-center gap-3">
             <LogOut className="h-5 w-5 text-yellow-500" />
             <div>
-              <p className="font-medium text-foreground">
+              <p className="font-medium text-white">
                 Logout from All Devices
               </p>
               <p className="text-sm text-muted-foreground">
@@ -222,12 +200,11 @@ export function Settings() {
       {/* Save Button */}
       <div className="flex justify-end gap-4">
         <Button
-          variant="outline"
-          className="border-border/50 hover:bg-secondary/30"
+          className="border-zinc-800/50 bg-white/5 p-3 py-2 hover:bg-white/10"
         >
           Discard Changes
         </Button>
-        <Button className="bg-accent hover:bg-accent/80 text-background px-8 py-2.5 flex items-center gap-2">
+        <Button className="bg-purple-500 hover:bg-purple-500/80 text-background px-8 py-2.5 flex items-center gap-2">
           <Save className="h-4 w-4" />
           Save Changes
         </Button>

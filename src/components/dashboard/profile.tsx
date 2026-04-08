@@ -45,21 +45,21 @@ export function Profile() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+        <h1 className="text-3xl font-bold text-white">Profile</h1>
         <p className="mt-2 text-muted-foreground">
           Manage your profile and preferences
         </p>
       </div>
 
       {/* Profile Picture & Basic Info */}
-      <div className="rounded-xl border border-border/50 bg-card/30 p-8 backdrop-blur-xl">
+      <div className="rounded-xl border border-zinc-800/50 bg-[#101311] p-8 backdrop-blur-xl">
         <div className="flex flex-col gap-8 md:flex-row md:items-center">
           {/* Avatar */}
-          <div className="relative h-32 w-32 flex-shrink-0">
-            <div className="h-full w-full rounded-xl bg-gradient-to-br from-accent/40 to-blue-500/40 flex items-center justify-center border border-border/50">
-              <User className="h-16 w-16 text-accent" />
+          <div className="relative h-32 w-32 shrink-0">
+            <div className="h-full w-full rounded-xl bg-linear-to-br from-purple-500/40 to-blue-500/40 flex items-center justify-center border border-zinc-800/50">
+              <User className="h-16 w-16 text-white" />
             </div>
-            <button className="absolute -bottom-2 -right-2 rounded-lg bg-accent p-2.5 text-background hover:bg-accent/80 transition-colors">
+            <button className="absolute -bottom-2 -right-2 rounded-lg bg-purple-500 p-2.5 text-background hover:bg-purple-500/80 transition-colors">
               <Upload className="h-4 w-4" />
             </button>
           </div>
@@ -76,7 +76,7 @@ export function Profile() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border border-border/50 bg-secondary/30 px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-accent focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
                 />
               </div>
               <div>
@@ -88,7 +88,7 @@ export function Profile() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border border-border/50 bg-secondary/30 px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-accent focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
                 />
               </div>
             </div>
@@ -102,7 +102,7 @@ export function Profile() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border border-border/50 bg-secondary/30 px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-accent focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
                 />
               </div>
               <div>
@@ -114,7 +114,7 @@ export function Profile() {
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  className="w-full rounded-lg border border-border/50 bg-secondary/30 px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-accent focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
                 />
               </div>
             </div>
@@ -123,8 +123,8 @@ export function Profile() {
       </div>
 
       {/* Bio */}
-      <div className="rounded-xl border border-border/50 bg-card/30 p-8 backdrop-blur-xl">
-        <label className="block text-sm font-medium text-muted-foreground mb-3">
+      <div className="rounded-xl border border-zinc-800/50 bg-[#101311] p-8 backdrop-blur-xl">
+        <label className="block text-sm font-medium text-white mb-3">
           Bio
         </label>
         <textarea
@@ -132,13 +132,13 @@ export function Profile() {
           value={formData.bio}
           onChange={handleInputChange}
           rows={4}
-          className="w-full rounded-lg border border-border/50 bg-secondary/30 px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-accent focus:outline-none"
+          className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
         />
       </div>
 
       {/* Skills */}
-      <div className="rounded-xl border border-border/50 bg-card/30 p-8 backdrop-blur-xl">
-        <h3 className="mb-6 text-lg font-semibold text-foreground">Skills</h3>
+      <div className="rounded-xl border border-zinc-800/50 bg-[#101311] p-8 backdrop-blur-xl">
+        <h3 className="mb-6 text-lg font-semibold text-white">Skills</h3>
 
         {/* Add Skill */}
         <div className="mb-6 flex gap-2">
@@ -148,11 +148,11 @@ export function Profile() {
             onChange={(e) => setNewSkill(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleAddSkill()}
             placeholder="Add a new skill..."
-            className="flex-1 rounded-lg border border-border/50 bg-secondary/30 px-4 py-2.5 text-foreground placeholder-muted-foreground focus:border-accent focus:outline-none"
+            className="flex-1 rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
           />
           <Button
             onClick={handleAddSkill}
-            className="bg-accent hover:bg-accent/80 text-background"
+            className="bg-purple-500 hover:bg-purple-500/80 text-background"
           >
             Add
           </Button>
@@ -163,12 +163,12 @@ export function Profile() {
           {skills.map((skill) => (
             <div
               key={skill}
-              className="flex items-center gap-2 rounded-full bg-accent/20 px-4 py-2 text-sm text-accent border border-accent/30"
+              className="flex items-center gap-2 rounded-full bg-purple-500/20 px-4 py-2 text-sm text-purple-500 border border-purple-500/30"
             >
               {skill}
               <button
                 onClick={() => handleRemoveSkill(skill)}
-                className="hover:text-accent/60 transition-colors"
+                className="hover:text-purple-500/60 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -178,11 +178,11 @@ export function Profile() {
       </div>
 
       {/* Resume Upload */}
-      <div className="rounded-xl border border-border/50 bg-card/30 p-8 backdrop-blur-xl">
-        <h3 className="mb-6 text-lg font-semibold text-foreground">Resume</h3>
-        <div className="rounded-lg border-2 border-dashed border-border/50 p-8 text-center hover:border-accent/50 transition-colors">
+      <div className="rounded-xl border border-zinc-800/50 bg-[#101311] p-8 backdrop-blur-xl">
+        <h3 className="mb-6 text-lg font-semibold text-white">Resume</h3>
+        <div className="rounded-lg border-2 border-dashed border-zinc-800/50 p-8 text-center hover:border-accent/50 transition-colors">
           <Upload className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="text-foreground">
+          <p className="text-white">
             Drag and drop your resume or{" "}
             <span className="text-accent cursor-pointer hover:underline">
               click to browse
@@ -196,7 +196,7 @@ export function Profile() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button className="bg-accent hover:bg-accent/80 text-background px-8 py-2.5">
+        <Button className="bg-purple-500 hover:bg-purple-500/80 text-background px-8 py-2.5">
           Save Changes
         </Button>
       </div>

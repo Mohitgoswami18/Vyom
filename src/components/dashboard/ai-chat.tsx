@@ -77,7 +77,7 @@ export default function AIChat() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-accent to-blue-500 text-white shadow-lg hover:shadow-xl hover:shadow-accent/40 transition-all duration-300 z-40"
+        className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-br from-purple-500 to-blue-500 text-white shadow-lg hover:shadow-xl hover:shadow-accent/40 transition-all duration-300 z-40"
       >
         <MessageCircle className="h-6 w-6" />
       </button>
@@ -86,20 +86,20 @@ export default function AIChat() {
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-xl shadow-2xl transition-all duration-300 ${
+      className={`fixed bottom-6 right-6 z-50 rounded-2xl border border-zinc-800/50 bg-[#1a1919] backdrop-blur-xl shadow-2xl transition-all duration-300 ${
         isMinimized ? "w-80 h-16" : "w-96 h-96"
       } flex flex-col`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/50 p-4">
+      <div className="flex items-center justify-between border-b border-zinc-800/50 p-4">
         <div>
-          <h3 className="font-semibold text-foreground">InternAI Assistant</h3>
+          <h3 className="font-semibold text-white">Vyom AI</h3>
           <p className="text-xs text-muted-foreground">Online</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setIsMinimized(!isMinimized)}
-            className="rounded-lg hover:bg-secondary/30 p-1.5 transition-colors"
+            className="rounded-lg text-white hover:bg-white/5 p-1.5 transition-colors"
           >
             {isMinimized ? (
               <Maximize2 className="h-4 w-4" />
@@ -109,7 +109,7 @@ export default function AIChat() {
           </button>
           <button
             onClick={() => setIsOpen(false)}
-            className="rounded-lg hover:bg-secondary/30 p-1.5 transition-colors"
+            className="rounded-lg text-white hover:bg-white/5 p-1.5 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -128,8 +128,8 @@ export default function AIChat() {
                 <div
                   className={`max-w-xs rounded-lg px-4 py-2 ${
                     message.role === "user"
-                      ? "bg-accent text-background"
-                      : "bg-secondary/40 text-foreground border border-border/50"
+                      ? "bg-purple-500 text-background"
+                      : "bg-white/5 text-white border border-zinc-800/50"
                   }`}
                 >
                   <p className="text-sm">{message.content}</p>
@@ -151,7 +151,7 @@ export default function AIChat() {
           </div>
 
           {/* Input */}
-          <div className="border-t border-border/50 p-4">
+          <div className="border-t border-zinc-800/50 p-4">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -159,12 +159,12 @@ export default function AIChat() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                 placeholder="Ask me anything..."
-                className="flex-1 rounded-lg border border-border/50 bg-secondary/30 px-3 py-2 text-sm text-foreground placeholder-muted-foreground focus:border-accent focus:outline-none"
+                className="flex-1 rounded-lg border border-zinc-800/50 bg-white/5 text-white px-3 py-2 text-sm placeholder-muted-foreground focus:border-accent focus:outline-none"
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!input.trim() || isLoading}
-                className="rounded-lg bg-accent p-2 text-background hover:bg-accent/80 disabled:opacity-50 transition-colors"
+                className="rounded-lg bg-purple-500 p-2 text-white hover:bg-purple-600 disabled:opacity-50 transition-colors"
               >
                 <Send className="h-4 w-4" />
               </button>
