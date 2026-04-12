@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { TrendingUp, Zap, CheckCircle2, Clock } from "lucide-react";
 import  Recommendations  from "../dashboard/recommendations";
+import { toast } from "sonner";
 
 const applicationData = [
   { month: "Jan", applications: 4, matches: 2 },

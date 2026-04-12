@@ -6,20 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import Image from "next/image";
-import Vyom from "../../../../assets/VyomLogo.png";
+import Vyom from "../../assets/VyomLogo.png";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/spinner"
+import { toast } from "sonner";
 
 const SignupPage = () => {
-
-      
 const [showPassword, setShowPassword] = useState(false);
-const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState("");
+const router = useRouter()
 
 const [formData, setFormData] = useState({
   name: "",
   email: "",
   password: "",
-  confirmPassword: "",
 });
 
 const [passwordStrength, setPasswordStrength] = useState(0);
@@ -39,10 +41,48 @@ const handleChange = (e) => {
   }
 };
 
-const handleSubmit = (e) => {
-  e.preventDefault();
-  console.log("Form Data:", formData);
-};
+const handleSubmit = async (e) => {
+  try{
+    e.preventDefault();
+    setLoading(true);
+   const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: formData.name, email: formData.email, password: formData.password }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.message);
+      setLoading(false);
+      return;
+    }
+
+    toast.success("signedup successfully... Logging you in...")
+
+    // Step 2: auto sign in via NextAuth
+    const result = await signIn("credentials", {
+      email: formData.email,
+      password: formData.password,
+      redirect: false,
+    });
+
+    // console.log("Sign in result:", result);
+
+    if (result?.error) {
+      setError("Account created but sign in failed. Please login.");
+      router.push("/login");
+      return;
+    }
+
+    // Step 3: redirect to dashboard
+    router.push("/dashboard");
+    setLoading(false);
+  } catch (err) {
+    setError("An unexpected error occurred. Please try again.",err);
+    setLoading(false);
+  };
+}
 
 const getPasswordStrengthLabel = () => {
   if (passwordStrength === 0) return "";
@@ -189,10 +229,11 @@ const getPasswordStrengthColor = () => {
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="you@example.com"
                     value={formData.email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={handleChange}
                     className="pl-10 text-white bg-zinc-500/30 outline-none border-none placeholder:text-muted-foreground"
                     required
                   />
@@ -221,7 +262,7 @@ const getPasswordStrengthColor = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-white transition-colors"
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -254,59 +295,15 @@ const getPasswordStrengthColor = () => {
                 )}
               </div>
 
-              {/* Confirm password field */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="confirmPassword"
-                  className="text-sm font-medium text-white"
-                >
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="pl-10 pr-10 bg-zinc-500/30 text-white  placeholder:text-muted-foreground"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Password match indicator */}
-              {formData.password && formData.confirmPassword && (
-                <div
-                  className={`flex items-center gap-2 text-sm ${formData.password === formData.confirmPassword ? "text-green-500" : "text-red-500"}`}
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  {formData.password === formData.confirmPassword
-                    ? "Passwords match"
-                    : "Passwords do not match"}
-                </div>
-              )}
-
               <Button
                 type="submit"
                 className="w-full bg-linear-to-r from-purple-500 to-blue-500 hover:opacity-90 text-white font-semibold py-2 rounded-lg transition-opacity duration-200"
               >
-                Sign In
+                {loading ? <Spinner className="w-4 h-4" /> : "Sign Up"}
               </Button>
             </form>
+            
+            {error && (<div className="text-xs mx-auto text-center text-red-400">{error}</div>)}
 
             {/* Sign up link */}
             <p className="text-center text-sm text-muted">

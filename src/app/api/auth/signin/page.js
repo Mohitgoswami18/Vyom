@@ -6,19 +6,35 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import Image from "next/image";
-import Vyom from "../../assets/VyomLogo.png";
+import Vyom from "../../../../assets/VyomLogo.png";
 import {signIn} from "next-auth/react"
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    // Handle login logic here
-  }
+      setLoading(true)
+      e.preventDefault()
+      handleLogin();
+    }
+  
+    const handleLogin = async () => {
+      const res = await signIn("credentials", {
+        email: email,
+        password: password,
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
 
+      if(!res.ok) {
+        setError("Invalid email or password");
+        setLoading(false);
+      }
+    };
   return (
     <main className="min-h-screen bg-grid-pattern bg-[#0A0A0A] w-full flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated background */}
@@ -183,11 +199,17 @@ const LoginPage = () => {
               </Button>
             </form>
 
+            {error && (
+              <div className="text-red-500 text-sm text-center">
+                {error}
+              </div>
+            )}
+
             {/* Sign up link */}
             <p className="text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{" "}
               <Link
-                href="/api/auth/signup"
+                href="/signup"
                 className="text-purple-500 hover:text-purple-500/80 font-semibold transition-colors"
               >
                 Create one

@@ -83,7 +83,7 @@ const Navbar = () => {
                 </Button>
               </Link>
 
-              <Link href="/api/auth/signup">
+              <Link href="/signup">
                 <Button className="bg-linear-to-r from-[#7646F0] to-blue-500 hover:opacity-90 text-white border-0">
                   Get Started
                 </Button>

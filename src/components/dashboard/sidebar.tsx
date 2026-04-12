@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import vyomLogo from "@/assets/VyomLogo.png";
+import { signOut } from "next-auth/react";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   User,
@@ -23,6 +25,11 @@ const navItems = [
   },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
+
+const handleLogout = () => { 
+  toast.success("Logged out successfully!")
+  signOut({ callbackUrl: "/" });
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -62,7 +69,8 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="absolute bottom-0 left-0 right-0 border-t border-zinc-800/50 bg-[#121212] backdrop-blur-xl p-4">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-zinc-900/70 hover:text-white">
+        <button
+        onClick={() => handleLogout()} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-zinc-900/70 hover:text-white">
           <LogOut className="h-5 w-5" />
           Logout
         </button>

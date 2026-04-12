@@ -3,44 +3,47 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
+import connectToDatabase from "../../../../lib/db.js"
+// import { User } from "lucide-react";
+import bcrypt from "bcryptjs";
+import {User} from "../../../../models/user.model.js"
 
 export const authOptions = {
   // Configure one or more authentication providers
   pages: {
     signIn: "/signin",
-    newUser: "/signup", // 👈 THIS is your custom signup
+    newUser: "/signup",
   },
   providers: [
     CredentialsProvider({
-      name: "Email and Password",
-      // The credentials is used to generate a suitable form on the sign in page.
-      // You can specify whatever fields you are expecting to be submitted.
-      // e.g. domain, username, password, 2FA token, etc.
-      // You can pass any HTML attribute to the <input> tag through the object.
+      name: "credentials",
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
-        password: { label: "Password", type: "password" },
+        username: {},
+        password: {},
       },
-      async authorize(credentials, req) {
-        // You need to provide your own logic here that takes the credentials
-        // submitted and returns either a object representing a user or value
-        // that is false/null if the credentials are invalid.
-        // e.g. return { id: 1, name: 'J Smith', email: 'jsmith@example.com' }
-        // You can also use the `req` object to obtain additional parameters
-        // (i.e., the request IP address)
-        const res = await fetch("/your/endpoint", {
-          method: "POST",
-          body: JSON.stringify(credentials),
-          headers: { "Content-Type": "application/json" },
-        });
-        const user = await res.json();
+      async authorize(credentials) {
+        await connectToDatabase();
+        const user = await User.findOne({ email: credentials?.email });
 
-        // If no error and we have user data, return it
-        if (res.ok && user) {
-          return user;
+        if (!user) {
+          throw new Error("No user found with this email");
         }
-        // Return null if user data could not be retrieved
-        return null;
+
+        const isValid = await bcrypt.compare(
+          credentials!.password,
+          user.password,
+        );
+
+        if (!isValid) {
+          throw new Error("Invalid password");
+        }
+
+        console.log("valid user found successfully sjdvhsivhd")
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+        };
       },
     }),
     GithubProvider({
