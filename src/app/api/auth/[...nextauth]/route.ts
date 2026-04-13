@@ -3,10 +3,10 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
-import connectToDatabase from "../../../../lib/db.js"
+import connectToDatabase from "../../../../lib/db.js";
 // import { User } from "lucide-react";
 import bcrypt from "bcryptjs";
-import {User} from "../../../../models/user.model.js"
+import { User } from "../../../../models/user.model";
 
 export const authOptions = {
   // Configure one or more authentication providers
@@ -20,17 +20,30 @@ export const authOptions = {
       credentials: {
         username: {},
         password: {},
+        email: {},
       },
+
       async authorize(credentials) {
         await connectToDatabase();
-        const user = await User.findOne({ email: credentials?.email });
+
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Missing credentials");
+        }
+
+        const user = await User.findOne({
+          email: credentials.email,
+        });
 
         if (!user) {
           throw new Error("No user found with this email");
         }
 
+        if (!user.password) {
+          throw new Error("User has no password (OAuth account)");
+        }
+
         const isValid = await bcrypt.compare(
-          credentials!.password,
+          credentials.password,
           user.password,
         );
 
@@ -38,7 +51,8 @@ export const authOptions = {
           throw new Error("Invalid password");
         }
 
-        console.log("valid user found successfully sjdvhsivhd")
+        // console.log("✅ Valid user found");
+
         return {
           id: user._id.toString(),
           name: user.name,

@@ -1,8 +1,42 @@
 import mongoose from "mongoose";
+import { Schema } from "mongoose";
+import {Document} from "mongoose"; 
 
-const { Schema } = mongoose;
+export interface iUser extends Document {
+  name: string;
+  email: string;
+  password?: string;
+  provider: "credentials" | "oauth";
+  image: string;
+  isProfileComplete: boolean;
+  skills: string[];
+  education: string[];
+  resumeLink: string;
+  preferences: {
+    role: string;
+    location: string;
+    stipend: number;
+  };
+  appliedCount: number;
+  totalMatchFound: number;
+  applicationSent: number;
+  applications: mongoose.Types.ObjectId[];
+  likedApplications: mongoose.Types.ObjectId[];
+  settings: {
+    notifications: {
+      email: boolean;
+      push: boolean;
+      applicationUpdates: boolean;
+      weeklyDigest: boolean;
+    };
+    privacy: {
+      profileVisible: boolean;
+      datacollection: boolean;
+    };
+  }
+}
 
-const userSchema = new Schema(
+const userSchema = new Schema<iUser>(
   {
     name: {
       type: String,
@@ -26,7 +60,7 @@ const userSchema = new Schema(
 
     provider: {
       type: String,
-      enum: ["credentials", "google"],
+      enum: ["credentials", "oauth"],
       default: "credentials",
     },
 
@@ -91,4 +125,4 @@ const userSchema = new Schema(
   { timestamps: true },
 );
 
-export const User = mongoose.models.User || mongoose.model("User", userSchema);
+export const User = mongoose.models.User as mongoose.Model<iUser> || mongoose.model<iUser>("User", userSchema);
