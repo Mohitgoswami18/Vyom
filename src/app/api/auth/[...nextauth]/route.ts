@@ -4,7 +4,6 @@ import GoogleProvider from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
 import connectToDatabase from "../../../../lib/db.js";
-// import { User } from "lucide-react";
 import bcrypt from "bcryptjs";
 import { User } from "../../../../models/user.model";
 
