@@ -1,27 +1,67 @@
 "use client";
 
-import { useState } from "react";
-import { User, Mail, Phone, MapPin, Upload, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { User, Upload, X, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const initialSkills = [
-  "React",
-  "TypeScript",
-  "Node.js",
-  "Python",
-  "Machine Learning",
-];
+import { toast } from "sonner";
 
 export function Profile() {
-  const [skills, setSkills] = useState(initialSkills);
+  const { data: session, status } = useSession();
+
+  const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: "Alex Johnson",
-    email: "alex@example.com",
-    phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA",
-    bio: "Passionate about AI and software development with 2 years of experience in building scalable applications.",
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    bio: "",
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+
+  // Fetch profile data on mount
+  useEffect(() => {
+    console.log("inside the useEffect hook of react")
+    console.log("The status of the session is: ", status)
+    console.log("The session is: ", session)
+    const fetchProfile = async () => {
+      console.log("inside the fetchProfile function")
+      try {
+        const res = await fetch("/api/profile");
+        if (!res.ok) throw new Error("Failed to fetch profile");
+
+        const data = await res.json();
+        const user = data.user;
+        
+        console.log(user)
+
+        setFormData({
+          name: user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+          location: user.preferences?.location || "",
+          bio: user.bio || "",
+        });
+        setSkills(user.skills || []);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        toast.error("Failed to load profile data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (status === "authenticated") {
+      fetchProfile();
+    } else {
+      setIsLoading(false);
+    }
+  }, [status]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -31,8 +71,9 @@ export function Profile() {
   };
 
   const handleAddSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill)) {
-      setSkills([...skills, newSkill]);
+    const trimmed = newSkill.trim();
+    if (trimmed && !skills.includes(trimmed)) {
+      setSkills([...skills, trimmed]);
       setNewSkill("");
     }
   };
@@ -40,6 +81,78 @@ export function Profile() {
   const handleRemoveSkill = (skillToRemove: string) => {
     setSkills(skills.filter((s) => s !== skillToRemove));
   };
+
+  const handleResumeClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+      if (!validTypes.includes(file.type)) {
+        toast.error("Please upload a PDF, DOC, or DOCX file");
+        return;
+      }
+      // Validate file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("File size must be less than 10MB");
+        return;
+      }
+      setResumeFile(file);
+      toast.success(`Selected: ${file.name}`);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formData.name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          location: formData.location,
+          bio: formData.bio,
+          skills,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to save profile");
+      }
+
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save profile",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -76,6 +189,7 @@ export function Profile() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
+                  placeholder="Enter your full name"
                   className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
                 />
               </div>
@@ -87,8 +201,8 @@ export function Profile() {
                   type="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
+                  disabled
+                  className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white/50 placeholder-muted-foreground cursor-not-allowed focus:outline-none"
                 />
               </div>
             </div>
@@ -102,6 +216,7 @@ export function Profile() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
+                  placeholder="Enter your phone number"
                   className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
                 />
               </div>
@@ -114,6 +229,7 @@ export function Profile() {
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
+                  placeholder="Enter your location"
                   className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
                 />
               </div>
@@ -132,6 +248,7 @@ export function Profile() {
           value={formData.bio}
           onChange={handleInputChange}
           rows={4}
+          placeholder="Tell us about yourself..."
           className="w-full rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
         />
       </div>
@@ -146,7 +263,7 @@ export function Profile() {
             type="text"
             value={newSkill}
             onChange={(e) => setNewSkill(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleAddSkill()}
+            onKeyDown={(e) => e.key === "Enter" && handleAddSkill()}
             placeholder="Add a new skill..."
             className="flex-1 rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2.5 text-white placeholder-muted-foreground focus:border-accent focus:outline-none"
           />
@@ -160,6 +277,11 @@ export function Profile() {
 
         {/* Skills List */}
         <div className="flex flex-wrap gap-2">
+          {skills.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No skills added yet. Add your first skill above.
+            </p>
+          )}
           {skills.map((skill) => (
             <div
               key={skill}
@@ -180,24 +302,84 @@ export function Profile() {
       {/* Resume Upload */}
       <div className="rounded-xl border border-zinc-800/50 bg-[#101311] p-8 backdrop-blur-xl">
         <h3 className="mb-6 text-lg font-semibold text-white">Resume</h3>
-        <div className="rounded-lg border-2 border-dashed border-zinc-800/50 p-8 text-center hover:border-accent/50 transition-colors">
-          <Upload className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="text-white">
-            Drag and drop your resume or{" "}
-            <span className="text-accent cursor-pointer hover:underline">
-              click to browse
-            </span>
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            PDF, DOC, or DOCX (max 10MB)
-          </p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.doc,.docx"
+          onChange={handleResumeChange}
+          className="hidden"
+        />
+        <div
+          onClick={handleResumeClick}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const file = e.dataTransfer.files[0];
+            if (file) {
+              const validTypes = [
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              ];
+              if (!validTypes.includes(file.type)) {
+                toast.error("Please upload a PDF, DOC, or DOCX file");
+                return;
+              }
+              if (file.size > 10 * 1024 * 1024) {
+                toast.error("File size must be less than 10MB");
+                return;
+              }
+              setResumeFile(file);
+              toast.success(`Selected: ${file.name}`);
+            }
+          }}
+          className="cursor-pointer rounded-lg border-2 border-dashed border-zinc-800/50 p-8 text-center hover:border-accent/50 transition-colors"
+        >
+          {resumeFile ? (
+            <div className="flex flex-col items-center gap-2">
+              <Check className="h-8 w-8 text-green-500" />
+              <p className="text-white">{resumeFile.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {(resumeFile.size / (1024 * 1024)).toFixed(2)} MB — Click to
+                change
+              </p>
+            </div>
+          ) : (
+            <>
+              <Upload className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+              <p className="text-white">
+                Drag and drop your resume or{" "}
+                <span className="text-accent cursor-pointer hover:underline">
+                  click to browse
+                </span>
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                PDF, DOC, or DOCX (max 10MB)
+              </p>
+            </>
+          )}
         </div>
       </div>
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button className="bg-purple-500 hover:bg-purple-500/80 text-background px-8 py-2.5">
-          Save Changes
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="bg-purple-500 hover:bg-purple-500/80 text-background px-8 py-2.5 flex items-center gap-2 disabled:opacity-50"
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save Changes"
+          )}
         </Button>
       </div>
     </div>

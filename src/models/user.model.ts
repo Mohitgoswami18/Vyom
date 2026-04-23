@@ -8,6 +8,8 @@ export interface iUser extends Document {
   password?: string;
   provider: "credentials" | "oauth";
   image: string;
+  phone: string;
+  bio: string;
   isProfileComplete: boolean;
   skills: string[];
   education: string[];
@@ -65,6 +67,8 @@ const userSchema = new Schema<iUser>(
     },
 
     image: String,
+    phone: { type: String, default: "" },
+    bio: { type: String, default: "" },
 
     skills: [String],
     education: [String],
