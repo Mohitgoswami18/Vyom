@@ -7,7 +7,10 @@ export interface IApplication extends Document {
   company: string;
   status: "Applied" | "Interview" | "Rejected" | "Accepted";
   appliedDate: Date;
+  resumeLink?: string;
   notes?: string;
+  automationStatus: "pending" | "success" | "failed" | "skipped";
+  automationLog?: string;
 }
 
 const applicationSchema = new Schema <IApplication>(
@@ -29,9 +32,22 @@ const applicationSchema = new Schema <IApplication>(
       type: Date,
       default: Date.now,
     },
+    resumeLink: {
+      type: String,
+      default: "",
+    },
     notes: {
       type: String,
       maxlength: 200,
+    },
+    automationStatus: {
+      type: String,
+      enum: ["pending", "success", "failed", "skipped"],
+      default: "pending",
+    },
+    automationLog: {
+      type: String,
+      default: "",
     },
   },
   {

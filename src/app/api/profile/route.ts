@@ -16,7 +16,7 @@ export async function GET() {
     await connectToDatabase();
 
     const user = await User.findOne({ email: session.user.email }).select(
-      "name email phone bio skills education resumeLink preferences image isProfileComplete"
+      "name email phone bio skills education resumeLink preferences image profilePicture isProfileComplete"
     );
 
     if (!user) {
@@ -43,7 +43,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, phone, location, bio, skills, education, resumeLink } = body;
+    const { name, phone, location, bio, skills, education, resumeLink, profilePicture } = body;
 
     await connectToDatabase();
 
@@ -55,6 +55,7 @@ export async function PUT(req: NextRequest) {
     if (skills !== undefined) updateData.skills = skills;
     if (education !== undefined) updateData.education = education;
     if (resumeLink !== undefined) updateData.resumeLink = resumeLink;
+    if (profilePicture !== undefined) updateData.profilePicture = profilePicture;
     if (location !== undefined) updateData["preferences.location"] = location;
 
     // Mark profile as complete if essential fields are present
@@ -68,7 +69,7 @@ export async function PUT(req: NextRequest) {
       { $set: updateData },
       { new: true, runValidators: true }
     ).select(
-      "name email phone bio skills education resumeLink preferences image isProfileComplete"
+      "name email phone bio skills education resumeLink preferences image profilePicture isProfileComplete"
     );
 
     if (!updatedUser) {

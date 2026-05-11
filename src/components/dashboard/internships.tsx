@@ -11,6 +11,16 @@ import {
   ExternalLink,
   TrendingUp,
   AlertCircle,
+  FileText,
+  MapPin,
+  Clock,
+  X,
+  Brain,
+  Star,
+  Lightbulb,
+  ShieldAlert,
+  ChevronRight,
+  Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "../ui/spinner";
@@ -88,6 +98,15 @@ function scoreBarGradient(score: number) {
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
+// AI Analysis result shape
+interface AIAnalysis {
+  summary: string;
+  matchPercentage: number;
+  missingSkills: string[];
+  strengths: string[];
+  tips: string[];
+}
+
 export function Internships() {
   const [selectedTab, setSelectedTab] = useState<"all" | "matching">("all");
   const [internships, setInternships] = useState<Internship[]>([]);
@@ -95,10 +114,22 @@ export function Internships() {
   const [dataLoaded, setDataLoaded] = useState(false);
 
   const [userSkills, setUserSkills] = useState<string[]>([]);
+  const [resumeKeywords, setResumeKeywords] = useState<string[]>([]);
+  const [hasResume, setHasResume] = useState(false);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [locationFilter, setLocationFilter] = useState("");
+
+  // Drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Internship | null>(null);
+
+  // AI analysis cache: jobId -> result
+  const [aiAnalysisCache, setAiAnalysisCache] = useState<Record<string | number, AIAnalysis>>({});
+  const [analyzingJobId, setAnalyzingJobId] = useState<string | number | null>(null);
 
   // Track which jobs the user has applied to (by jobId)
   const [appliedJobs, setAppliedJobs] = useState<Set<string | number>>(
@@ -106,7 +137,7 @@ export function Internships() {
   );
   const [applyingTo, setApplyingTo] = useState<string | number | null>(null);
 
-  /* ---------- Fetch user profile for skills ---------- */
+  /* ---------- Fetch user profile for skills + resume keywords ---------- */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -114,6 +145,7 @@ export function Internships() {
         if (res.ok) {
           const data = await res.json();
           setUserSkills(data.user?.skills ?? []);
+          setHasResume(!!data.user?.resumeLink);
 
           // Pre-populate already-applied job IDs
           if (data.user?.applications) {
@@ -131,6 +163,24 @@ export function Internships() {
     };
     fetchProfile();
   }, []);
+
+  /* ---------- Fetch resume keywords ---------- */
+  useEffect(() => {
+    const fetchResumeKeywords = async () => {
+      try {
+        const res = await fetch("/api/resume/parse");
+        if (res.ok) {
+          const data = await res.json();
+          setResumeKeywords(data.keywords ?? []);
+        }
+      } catch {
+        // Resume parsing not available
+      }
+    };
+    if (profileLoaded && hasResume) {
+      fetchResumeKeywords();
+    }
+  }, [profileLoaded, hasResume]);
 
   /* ---------- Fetch internships ---------- */
   useEffect(() => {
@@ -165,15 +215,22 @@ export function Internships() {
     fetchInternships();
   }, []);
 
-  /* ---------- Recalculate match scores when skills or jobs change ---------- */
+  /* ---------- Recalculate match scores (skills + resume keywords) ---------- */
+  const combinedSkills = useMemo(() => {
+    const set = new Set<string>();
+    userSkills.forEach((s) => set.add(s.toLowerCase().trim()));
+    resumeKeywords.forEach((k) => set.add(k.toLowerCase().trim()));
+    return Array.from(set);
+  }, [userSkills, resumeKeywords]);
+
   const scoredInternships = useMemo(() => {
     if (!profileLoaded) return internships;
 
     return internships.map((job) => ({
       ...job,
-      matchScore: computeMatchScore(job.skills, userSkills),
+      matchScore: computeMatchScore(job.skills, combinedSkills),
     }));
-  }, [internships, userSkills, profileLoaded]);
+  }, [internships, combinedSkills, profileLoaded]);
 
   /* ---------- Filtering ---------- */
   const filteredInternships = useMemo(() => {
@@ -198,12 +255,22 @@ export function Internships() {
     // Tag filters
     if (selectedFilters.length) {
       list = list.filter((i) =>
-        selectedFilters.some((f) => {
+        selectedFilters.every((f) => {
           if (f === "high-match") return i.matchScore >= 85;
           if (f === "paid") return i.salary && i.salary.length > 1;
+          if (f === "remote") return i.location?.toLowerCase().includes("remote") || i.location?.toLowerCase().includes("anywhere");
+          if (f === "full_time") return i.type?.toLowerCase().includes("full");
+          if (f === "part_time") return i.type?.toLowerCase().includes("part");
+          if (f === "contract") return i.type?.toLowerCase().includes("contract") || i.type?.toLowerCase().includes("freelance");
           return true;
         }),
       );
+    }
+
+    // Location filter
+    if (locationFilter) {
+      const loc = locationFilter.toLowerCase();
+      list = list.filter((i) => i.location?.toLowerCase().includes(loc));
     }
 
     // Sort matched tab by score desc
@@ -212,7 +279,7 @@ export function Internships() {
     }
 
     return list;
-  }, [scoredInternships, selectedTab, searchQuery, selectedFilters]);
+  }, [scoredInternships, selectedTab, searchQuery, selectedFilters, locationFilter]);
 
   const matchedCount = useMemo(
     () => scoredInternships.filter((i) => i.matchScore >= 60).length,
@@ -232,6 +299,7 @@ export function Internships() {
     if (appliedJobs.has(internship.id)) return;
 
     setApplyingTo(internship.id);
+    toast.loading("Submitting application and running automation...", { id: "apply-toast" });
     try {
       const res = await fetch("/api/internships/apply", {
         method: "POST",
@@ -239,10 +307,12 @@ export function Internships() {
         body: JSON.stringify({
           jobId: internship.id,
           company: internship.company,
+          applyUrl: internship.liveLink,
         }),
       });
 
       if (res.status === 409) {
+        toast.dismiss("apply-toast");
         toast.info("You have already applied to this internship");
         setAppliedJobs((prev) => new Set(prev).add(internship.id));
         return;
@@ -253,15 +323,53 @@ export function Internships() {
         throw new Error(err.error || "Failed to apply");
       }
 
+      const data = await res.json();
       setAppliedJobs((prev) => new Set(prev).add(internship.id));
-      toast.success(`Applied to ${internship.company} successfully!`);
+      toast.dismiss("apply-toast");
+
+      if (data.automation?.status === "success") {
+        toast.success(`Applied to ${internship.company}! Form auto-filled successfully. ✅`);
+      } else if (data.automation?.status === "failed") {
+        toast.warning(`Applied to ${internship.company}, but automation failed. Please fill the form manually.`);
+      } else {
+        toast.success(`Applied to ${internship.company} successfully!`);
+      }
     } catch (error) {
+      toast.dismiss("apply-toast");
       console.error("Apply error:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to apply",
       );
     } finally {
       setApplyingTo(null);
+    }
+  };
+
+  const handleAnalyze = async (internship: Internship) => {
+    // Use cache if available
+    if (aiAnalysisCache[internship.id]) return;
+
+    setAnalyzingJobId(internship.id);
+    try {
+      const res = await fetch("/api/ai/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobTitle: internship.position,
+          company: internship.company,
+          jobDescription: internship.description,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Analysis failed");
+
+      const data: AIAnalysis = await res.json();
+      setAiAnalysisCache((prev) => ({ ...prev, [internship.id]: data }));
+    } catch (error) {
+      console.error("AI analyze error:", error);
+      toast.error("AI analysis failed. Check your GEMINI_API_KEY.");
+    } finally {
+      setAnalyzingJobId(null);
     }
   };
 
@@ -369,18 +477,17 @@ export function Internships() {
         )}
 
         {/* Actions */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
-            className="flex-1 bg-white/5 border border-zinc-800/50 hover:bg-white/10 text-white"
-            onClick={() =>
-              setExpanded((prev) => {
-                const next = [...prev];
-                next[idx] = !next[idx];
-                return next;
-              })
-            }
+            className="flex items-center gap-1.5 bg-indigo-500/20 border border-indigo-500/30 hover:bg-indigo-500/30 text-indigo-300"
+            onClick={() => {
+              setSelectedJob(internship);
+              setDrawerOpen(true);
+              handleAnalyze(internship);
+            }}
           >
-            {expanded[idx] ? "Hide Details" : "View Details"}
+            <Brain className="h-4 w-4" />
+            View in Detail
           </Button>
 
           {isApplied ? (
@@ -489,31 +596,81 @@ export function Internships() {
                   className="w-full rounded-lg border border-zinc-800/50 bg-white/5 pl-10 pr-4 py-2.5 text-white placeholder-muted-foreground focus:border-purple-500 focus:outline-none transition-colors"
                 />
               </div>
-              <button className="rounded-lg border border-zinc-800/50 bg-white/5 p-2.5 hover:bg-white/10 transition-colors">
-                <Filter className="h-5 w-5 text-white" />
+              <button
+                onClick={() => setShowFilters((p) => !p)}
+                className={`rounded-lg border p-2.5 transition-colors ${
+                  showFilters || selectedFilters.length > 0
+                    ? "border-purple-500/50 bg-purple-500/10 text-purple-400"
+                    : "border-zinc-800/50 bg-white/5 text-white hover:bg-white/10"
+                }`}
+              >
+                <Filter className="h-5 w-5" />
               </button>
             </div>
 
             {/* Filter Tags */}
             <div className="flex gap-2 flex-wrap">
               {[
-                { id: "high-match", label: "High Match (85%+)" },
-                { id: "paid", label: "Paid Internships" },
-              ].map((filter) => (
-                <button
-                  key={filter.id}
-                  onClick={() => toggleFilter(filter.id)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                    selectedFilters.includes(filter.id)
-                      ? "bg-purple-500 text-white border border-purple-400"
-                      : "bg-white/5 text-zinc-400 border border-zinc-800/50 hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
+                { id: "high-match", label: "High Match (85%+)", icon: Sparkles },
+                { id: "paid", label: "Paid", icon: TrendingUp },
+                { id: "remote", label: "Remote", icon: MapPin },
+                { id: "full_time", label: "Full-time", icon: Clock },
+                { id: "part_time", label: "Part-time", icon: Clock },
+                { id: "contract", label: "Contract", icon: Briefcase },
+              ].map((filter) => {
+                const Icon = filter.icon;
+                return (
+                  <button
+                    key={filter.id}
+                    onClick={() => toggleFilter(filter.id)}
+                    className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                      selectedFilters.includes(filter.id)
+                        ? "bg-purple-500 text-white border border-purple-400"
+                        : "bg-white/5 text-zinc-400 border border-zinc-800/50 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {filter.label}
+                  </button>
+                );
+              })}
             </div>
+
+            {/* Expanded filter panel */}
+            {showFilters && (
+              <div className="border-t border-zinc-800/50 pt-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 text-zinc-400 shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="Filter by location (e.g. USA, Europe, India)..."
+                    value={locationFilter}
+                    onChange={(e) => setLocationFilter(e.target.value)}
+                    className="flex-1 rounded-lg border border-zinc-800/50 bg-white/5 px-4 py-2 text-sm text-white placeholder-muted-foreground focus:border-purple-500 focus:outline-none"
+                  />
+                </div>
+                {(selectedFilters.length > 0 || locationFilter) && (
+                  <button
+                    onClick={() => { setSelectedFilters([]); setLocationFilter(""); }}
+                    className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                    Clear all filters
+                  </button>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Resume matching indicator */}
+          {selectedTab === "matching" && resumeKeywords.length > 0 && (
+            <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/5 px-4 py-3">
+              <FileText className="h-4 w-4 text-purple-400 shrink-0" />
+              <span className="text-sm text-purple-300">
+                Matching against <span className="font-semibold text-purple-200">{combinedSkills.length}</span> skills ({userSkills.length} from profile + {resumeKeywords.length} from resume)
+              </span>
+            </div>
+          )}
 
           {/* Results Count */}
           <div className="flex items-center justify-between">
@@ -526,10 +683,10 @@ export function Internships() {
                 ? `matched opportunities (≥60% match)`
                 : `of ${scoredInternships.length} opportunities`}
             </p>
-            {selectedTab === "matching" && userSkills.length === 0 && (
+            {selectedTab === "matching" && combinedSkills.length === 0 && (
               <div className="flex items-center gap-2 text-amber-400 text-sm">
                 <AlertCircle className="h-4 w-4" />
-                <span>Add skills to your profile for better matches</span>
+                <span>Add skills to your profile or upload a resume for better matches</span>
               </div>
             )}
           </div>
@@ -544,9 +701,9 @@ export function Internships() {
                 No matched internships yet
               </h3>
               <p className="text-muted-foreground max-w-md">
-                {userSkills.length === 0
-                  ? "Add skills to your profile to see internships matched to your expertise."
-                  : "No internships match your profile with 60% or higher. Try expanding your skill set!"}
+                {combinedSkills.length === 0
+                  ? "Add skills to your profile or upload a resume to see internships matched to your expertise."
+                  : "No internships match your profile with 60% or higher. Try uploading a detailed resume or expanding your skill set!"}
               </p>
             </div>
           ) : (
@@ -565,6 +722,209 @@ export function Internships() {
             Searching for internships...
           </p>
         </div>
+      )}
+      {/* ── AI Analysis Drawer ──────────────────────────────────────────────── */}
+      {drawerOpen && selectedJob && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            onClick={() => setDrawerOpen(false)}
+          />
+          {/* Drawer panel */}
+          <div className="fixed right-0 top-0 z-50 h-full w-full max-w-xl flex flex-col bg-[#111] border-l border-zinc-800 shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-zinc-800 p-5">
+              <div className="flex items-center gap-3">
+                {selectedJob.logo ? (
+                  <img src={selectedJob.logo} alt={selectedJob.company} className="h-10 w-10 rounded-lg object-contain bg-white/10 p-1" />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+                    <Briefcase className="h-5 w-5 text-zinc-400" />
+                  </div>
+                )}
+                <div>
+                  <h2 className="font-bold text-white text-lg leading-tight">{selectedJob.position}</h2>
+                  <p className="text-sm text-zinc-400">{selectedJob.company} · {selectedJob.location}</p>
+                </div>
+              </div>
+              <button onClick={() => setDrawerOpen(false)} className="rounded-lg p-2 text-zinc-400 hover:bg-white/5 hover:text-white transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+
+              {/* Quick meta */}
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full bg-white/5 border border-zinc-700 px-3 py-1 text-zinc-300">{selectedJob.type}</span>
+                <span className="rounded-full bg-white/5 border border-zinc-700 px-3 py-1 text-zinc-300">{selectedJob.duration}</span>
+                {selectedJob.salary && selectedJob.salary.length > 1 && (
+                  <span className="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-emerald-400">{selectedJob.salary}</span>
+                )}
+                <span className={`rounded-full px-3 py-1 border font-semibold ${
+                  selectedJob.matchScore >= 85 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" :
+                  selectedJob.matchScore >= 60 ? "bg-purple-500/10 border-purple-500/30 text-purple-400" :
+                  "bg-zinc-500/10 border-zinc-500/30 text-zinc-400"
+                }`}>{selectedJob.matchScore}% match</span>
+              </div>
+
+              {/* Skills */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Required Skills</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedJob.skills.map((skill) => {
+                    const isUserSkill = userSkills.some(
+                      (us) => us.toLowerCase().trim() === skill.toLowerCase().trim() ||
+                        us.toLowerCase().includes(skill.toLowerCase()) ||
+                        skill.toLowerCase().includes(us.toLowerCase())
+                    );
+                    return (
+                      <span key={skill} className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                        isUserSkill
+                          ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                          : "bg-white/5 text-zinc-400 border border-zinc-800/50"
+                      }`}>{skill}</span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Full description */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Job Description</h3>
+                <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">{selectedJob.description.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()}</p>
+              </div>
+
+              {/* ── AI Analysis Section ── */}
+              <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-purple-500/20">
+                    <Bot className="h-4 w-4 text-purple-400" />
+                  </div>
+                  <h3 className="font-semibold text-white">AI Resume Analysis</h3>
+                  <span className="ml-auto text-xs text-zinc-500">powered by Gemini</span>
+                </div>
+
+                {analyzingJobId === selectedJob.id ? (
+                  <div className="flex flex-col items-center justify-center py-8 gap-3">
+                    <Loader2 className="h-8 w-8 text-purple-400 animate-spin" />
+                    <p className="text-sm text-zinc-400">Gemini is analyzing your resume...</p>
+                  </div>
+                ) : aiAnalysisCache[selectedJob.id] ? (
+                  <div className="space-y-5">
+                    {/* Summary */}
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Star className="h-4 w-4 text-yellow-400" />
+                        <span className="text-sm font-semibold text-white">Summary</span>
+                        <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
+                          {aiAnalysisCache[selectedJob.id].matchPercentage}% fit
+                        </span>
+                      </div>
+                      <p className="text-sm text-zinc-300 leading-relaxed">{aiAnalysisCache[selectedJob.id].summary}</p>
+                    </div>
+
+                    {/* Strengths */}
+                    {aiAnalysisCache[selectedJob.id].strengths?.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                          <span className="text-sm font-semibold text-white">Your Strengths</span>
+                        </div>
+                        <ul className="space-y-1">
+                          {aiAnalysisCache[selectedJob.id].strengths.map((s, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
+                              <ChevronRight className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                              {s}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Missing Skills */}
+                    {aiAnalysisCache[selectedJob.id].missingSkills?.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <ShieldAlert className="h-4 w-4 text-rose-400" />
+                          <span className="text-sm font-semibold text-white">Missing Skills</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {aiAnalysisCache[selectedJob.id].missingSkills.map((skill, i) => (
+                            <span key={i} className="rounded-full bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 text-xs text-rose-300">{skill}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tips */}
+                    {aiAnalysisCache[selectedJob.id].tips?.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <Lightbulb className="h-4 w-4 text-amber-400" />
+                          <span className="text-sm font-semibold text-white">Tips to Improve</span>
+                        </div>
+                        <ol className="space-y-2">
+                          {aiAnalysisCache[selectedJob.id].tips.map((tip, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
+                              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-xs font-bold text-amber-400">{i + 1}</span>
+                              {tip}
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-6 gap-3 text-center">
+                    <Brain className="h-8 w-8 text-purple-400/50" />
+                    <p className="text-sm text-zinc-400">Analysis will appear here automatically.</p>
+                    <Button
+                      onClick={() => handleAnalyze(selectedJob)}
+                      className="bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500/30"
+                    >
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Analyze Now
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Footer actions */}
+            <div className="border-t border-zinc-800 p-4 flex gap-3">
+              {appliedJobs.has(selectedJob.id) ? (
+                <Button disabled className="flex-1 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 cursor-default">
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Already Applied
+                </Button>
+              ) : (
+                <Button
+                  disabled={applyingTo === selectedJob.id}
+                  onClick={() => handleApply(selectedJob)}
+                  className="flex-1 bg-purple-500 hover:bg-purple-600 text-white"
+                >
+                  {applyingTo === selectedJob.id ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Applying...</>
+                  ) : (
+                    "Apply Now"
+                  )}
+                </Button>
+              )}
+              <a
+                href={selectedJob.liveLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 rounded-lg border border-zinc-800/50 bg-white/5 px-4 text-sm text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Open Original
+              </a>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -4,8 +4,13 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import connectToDatabase from "@/lib/db.js";
 import { User } from "@/models/user.model";
 import { Application } from "@/models/application.mode";
+import { autoApply } from "@/lib/playwright-apply";
 
-// POST /api/internships/apply — apply to an internship
+// Required for Playwright on Vercel (extends function timeout)
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
+// POST /api/internships/apply — apply to an internship with Playwright automation
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { jobId, company } = body;
+    const { jobId, company, applyUrl } = body;
 
     if (!jobId || !company) {
       return NextResponse.json(
@@ -26,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     await connectToDatabase();
 
-    // Check if user already applied to this job
+    // Fetch user with their applications and profile data
     const user = await User.findOne({ email: session.user.email }).populate(
       "applications"
     );
@@ -35,6 +40,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Check if already applied
     const alreadyApplied = user.applications?.some(
       (app: any) => app.jobId === String(jobId)
     );
@@ -46,15 +52,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create the application
+    // ── Run Playwright automation ────────────────────────────────────────────
+    let automationStatus: "success" | "failed" | "skipped" = "skipped";
+    let automationLog = "";
+    let automationMessage = "No application URL provided — manual apply required.";
+
+    if (applyUrl) {
+      try {
+        const result = await autoApply({
+          name: user.name ?? session.user.name ?? "",
+          email: user.email,
+          phone: user.phone ?? "",
+          resumeLink: user.resumeLink ?? "",
+          coverLetter: `I am excited to apply for this position at ${company}. My skills and experience make me a strong candidate for this role.`,
+          applyUrl,
+        });
+
+        automationStatus = result.success ? "success" : "failed";
+        automationLog = result.log.join("\n");
+        automationMessage = result.message;
+      } catch (err) {
+        automationStatus = "failed";
+        automationLog = `Automation crashed: ${(err as Error).message}`;
+        automationMessage = "Automation failed — please apply manually.";
+      }
+    }
+
+    // ── Create Application record ────────────────────────────────────────────
     const application = await Application.create({
       jobId: String(jobId),
       company,
       status: "Applied",
       appliedDate: new Date(),
+      resumeLink: user.resumeLink || "",
+      automationStatus,
+      automationLog,
     });
 
-    // Link it to the user and bump counters
+    // Link to user and bump counters
     await User.findOneAndUpdate(
       { email: session.user.email },
       {
@@ -64,7 +99,14 @@ export async function POST(req: NextRequest) {
     );
 
     return NextResponse.json(
-      { message: "Application submitted successfully", application },
+      {
+        message: "Application submitted successfully",
+        application,
+        automation: {
+          status: automationStatus,
+          message: automationMessage,
+        },
+      },
       { status: 201 }
     );
   } catch (error) {

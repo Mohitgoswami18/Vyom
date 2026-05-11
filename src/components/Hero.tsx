@@ -27,7 +27,7 @@ const Hero = () => {
         <div className="text-center space-y-8">
           {/* Animated badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#6F34D3] bg-[#0A0A0A]/5 backdrop-blur-sm">
-            <div className="w-3 h-3 rounded-full bg-[#6F34D3] animate-pulse" />
+            <div className="w-3 h-3 rounded-full bg-[#532a9a] animate-pulse" />
             <span className="text-sm text-[#6F34D3]">
               Powered by Advanced AI
             </span>
@@ -53,18 +53,26 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Button
               size="lg"
-              className="bg-white hover:bg-white/90 text-black font-semibold px-8 rounded-full"
+              className="relative overflow-hidden group bg-white text-black font-semibold px-8 rounded-full"
             >
-              Get Started
+              <span className="absolute inset-0 bg-[#6F34D3] transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-in-out"></span>
+              <span className="relative z-10 group-hover:text-white transition-colors duration-500">
+                Get Started
+              </span>
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-[#6F34D3]/50 bg-black hover:bg-[#6F34D3]/10 hover:text-white text-white px-8 rounded-full gap-2"
-            >
-              <Play className="w-4 h-4" />
-              View Demo
-            </Button>
+            <div className="relative group">
+              <div className="card-border-runner" aria-hidden="true" />
+              <div className="relative">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-[#6F34D3]/50 z-99 bg-black hover:bg-[#6F34D3]/10 hover:text-white text-white px-8 rounded-xl gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  View Demo
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Stats or social proof */}

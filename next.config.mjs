@@ -2,7 +2,13 @@
 const nextConfig = {
   /* config options here */
   images: {
-    domains: ["remotive.com"],
+    domains: [
+      "remotive.com",
+      "res.cloudinary.com",
+      "lh3.googleusercontent.com",
+      "avatars.githubusercontent.com",
+      "cdn.discordapp.com",
+    ],
   },
 };
 
